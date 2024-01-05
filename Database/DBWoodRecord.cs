@@ -6,18 +6,14 @@ namespace EscapeFromTheWoods
 {
     public class DBWoodRecord
     {
-        public DBWoodRecord(int woodID, int treeID, int x, int y)
+        public DBWoodRecord(int woodID, List<Tree> trees)
         {
             this.woodID = woodID;
-            this.treeID = treeID;
-            this.x = x;
-            this.y = y;
+            this.trees = trees;
         }
 
-        public int recordID { get; set; }
         public int woodID { get; set; }
         public int treeID { get; set; }
-        public int x { get; set; }
-        public int y { get; set; }
+        public List<Tree> trees { get; set; }
     }
 }

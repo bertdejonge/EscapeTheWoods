@@ -1,96 +1,35 @@
-﻿using System;
+﻿using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
+using ZstdSharp.Unsafe;
 
 namespace EscapeFromTheWoods
 {
     public class DBwriter
     {
-        private string connectionString;
+        private string _connectionString = @"mongodb://localhost:27017";
+        private IMongoClient _client;
+        public IMongoDatabase _db;
 
-        public DBwriter(string connectionString)
+        public DBwriter()
         {
-            this.connectionString = connectionString;
+            _client = new MongoClient(_connectionString);
+            _db = _client.GetDatabase("EscapeTheWoodsDB");
         }
 
-        private SqlConnection getConnection()
+        public async Task WriteWoodRecordAsync(DBWoodRecord record)
         {
-            SqlConnection connection = new SqlConnection(connectionString);
-            return connection;
-        }
-        public void WriteWoodRecords(List<DBWoodRecord> data)
-        {
-            SqlConnection connection = getConnection();
-            string query = "INSERT INTO dbo.WoodRecords (woodID,treeID,x,y) VALUES(@woodID,@treeID,@x,@y)";
-            using (SqlCommand command = connection.CreateCommand())
-            {
-                connection.Open();
-                try
-                {
-                    command.Parameters.Add(new SqlParameter("@woodID", SqlDbType.Int));
-                    command.Parameters.Add(new SqlParameter("@treeID", SqlDbType.Int));
-                    command.Parameters.Add(new SqlParameter("@x", SqlDbType.Int));
-                    command.Parameters.Add(new SqlParameter("@y", SqlDbType.Int));
+            var collection = _db.GetCollection<DBWoodRecord>("Woods");
+            await collection.InsertOneAsync(record);
 
-                    command.CommandText = query;
-                    foreach (var x in data)
-                    {
-                        command.Parameters["@woodID"].Value = x.woodID;
-                        command.Parameters["@treeID"].Value = x.treeID;
-                        command.Parameters["@x"].Value = x.x;
-                        command.Parameters["@y"].Value = x.y;
-                        command.ExecuteNonQuery();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
         }
-        public void WriteMonkeyRecords(List<DBMonkeyRecord> data)
+        public async Task WriteMonkeyRecord(DBMonkeyRecord record)
         {
-            SqlConnection connection = getConnection();
-            string query = "INSERT INTO dbo.MonkeyRecords (monkeyID,monkeyName,woodID, seqNr,treeID,x,y) VALUES(@monkeyID,@monkeyName,@woodID,@seqNr,@treeID,@x,@y)";
-            using (SqlCommand command = connection.CreateCommand())
-            {
-                connection.Open();
-                try
-                {
-                    command.Parameters.Add(new SqlParameter("@monkeyID", SqlDbType.Int));
-                    command.Parameters.Add(new SqlParameter("@monkeyName", SqlDbType.NVarChar));
-                    command.Parameters.Add(new SqlParameter("@woodID", SqlDbType.Int));
-                    command.Parameters.Add(new SqlParameter("@seqNr", SqlDbType.Int));
-                    command.Parameters.Add(new SqlParameter("@treeID", SqlDbType.Int));
-                    command.Parameters.Add(new SqlParameter("@x", SqlDbType.Int));
-                    command.Parameters.Add(new SqlParameter("@y", SqlDbType.Int));
-
-                    command.CommandText = query;
-                    foreach (var x in data) {
-                        command.Parameters["@monkeyID"].Value = x.monkeyID;
-                        command.Parameters["@monkeyName"].Value = x.monkeyName;
-                        command.Parameters["@woodID"].Value = x.woodID;
-                        command.Parameters["@seqNr"].Value = x.seqNr;
-                        command.Parameters["@treeID"].Value = x.treeID;
-                        command.Parameters["@x"].Value = x.x;
-                        command.Parameters["@y"].Value = x.y;
-                        command.ExecuteNonQuery();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
+            var collection = _db.GetCollection<DBMonkeyRecord>("Monkeys");
+            await collection.InsertOneAsync(record);
         }
     }
 }
